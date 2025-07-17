@@ -5,6 +5,12 @@ from datetime import datetime
 from geopy.exc import GeocoderTimedOut
 from geopy.geocoders import Nominatim
 
+MONTHS = {
+    "Januar": "01", "Februar": "02", "März": "03", "April": "04",
+    "Mai": "05", "Juni": "06", "Juli": "07", "August": "08",
+    "September": "09", "Oktober": "10", "November": "11", "Dezember": "12"
+}
+
 geolocator = Nominatim(user_agent="karlsruhe_event_app")
 
 def normalize_street_name(text):
@@ -33,8 +39,12 @@ def parse_event_datetime(text):
         return None
     day, month_str, year, hour, minute = match.groups()
     minute = minute or "00"
-    datetime_str = f"{day}. {month_str} {year} {hour}:{minute}"
+    month_num = MONTHS.get(month_str)
+    if not month_num:
+        print(f"Unknown month: {month_str}")
+        return None
+    datetime_str = f"{year}-{month_num}-{int(day):02d} {int(hour):02d}:{minute}"
     try:
-        return datetime.strptime(datetime_str, "%d. %B %Y %H:%M").isoformat()
+        return datetime.strptime(datetime_str, "%Y-%m-%d %H:%M").isoformat()
     except ValueError as e:
         print(f"Failed to parse datetime: {datetime_str} -> {e}")
